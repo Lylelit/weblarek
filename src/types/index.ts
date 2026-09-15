@@ -39,3 +39,65 @@ export interface IOrderResponse {
     id: string;
     total: number;
 }
+
+export interface ICardData {
+    title: string;
+    category: string;
+    image: string;
+    price: number | null;
+}
+
+export interface IPreviewCardData extends ICardData {
+    description: string;
+    buttonText: string;
+    buttonDisabled: boolean;
+}
+
+export interface IBasketCardData {
+    index: number;
+    title: string;
+    price: number | null;
+}
+
+export interface IPageData {
+    catalog: HTMLElement[];
+    counter: number;
+}
+
+export interface IBasketData {
+    items: HTMLElement[];
+    total: number;
+    valid: boolean;
+}
+
+export interface IFormData {
+    valid: boolean;
+    errors: string[];
+}
+
+export interface IOrderFormData extends IFormData {
+    payment: TPayment;
+    address: string;
+}
+
+export interface IContactsFormData extends IFormData {
+    email: string;
+    phone: string;
+}
+
+export interface ISuccessData {
+    total: number;
+}
+
+export interface IModalData {
+    content: HTMLElement;
+}
+
+export interface IProductEvent {
+    id: string;
+}
+
+export interface IBuyerChangeEvent {
+    field: keyof IBuyer;
+    value: string;
+}

@@ -16,7 +16,21 @@ export const categoryMap = {
   'другое': 'card__category_other',
 };
 
-export const settings = {
+export const appEvents = {
+  catalogChanged: 'catalog:changed',
+  previewChanged: 'preview:changed',
+  basketChanged: 'basket:changed',
+  buyerChanged: 'buyer:changed',
+  catalogSelect: 'catalog:select',
+  previewToggle: 'preview:toggle',
+  basketOpen: 'basket:open',
+  basketRemove: 'basket:remove',
+  basketOrder: 'basket:order',
+  buyerChange: 'buyer:change',
+  orderSubmit: 'order:submit',
+  contactsSubmit: 'contacts:submit',
+  modalClose: 'modal:close',
+  successClose: 'success:close',
+} as const;
 
-};
 
