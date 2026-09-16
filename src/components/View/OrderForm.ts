@@ -15,7 +15,7 @@ export class OrderForm extends Form<IOrderFormData> {
 
         this.paymentButtons.forEach((button) => {
             button.addEventListener('click', () => {
-                events.emit(appEvents.buyerChange, {
+                this.events.emit(appEvents.buyerChange, {
                     field: 'payment',
                     value: button.name,
                 });

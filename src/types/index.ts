@@ -59,9 +59,12 @@ export interface IBasketCardData {
     price: number | null;
 }
 
-export interface IPageData {
-    catalog: HTMLElement[];
+export interface IHeaderData {
     counter: number;
+}
+
+export interface IGalleryData {
+    items: HTMLElement[];
 }
 
 export interface IBasketData {

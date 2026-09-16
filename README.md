@@ -310,7 +310,8 @@ interface IOrderResponse {
 - ICardData — название, категория, изображение и цена карточки каталога;
 - IPreviewCardData — данные карточки каталога, описание и состояние кнопки подробного просмотра;
 - IBasketCardData — порядковый номер, название и цена позиции корзины;
-- IPageData — массив готовых элементов каталога и значение счётчика корзины;
+- IHeaderData — значение счётчика корзины в шапке;
+- IGalleryData — массив готовых элементов каталога;
 - IBasketData — массив готовых элементов корзины, итоговая стоимость и признак доступности оформления;
 - IFormData — валидность формы и массив сообщений об ошибках;
 - IOrderFormData — данные базовой формы, способ оплаты и адрес;
@@ -338,9 +339,12 @@ interface IBasketCardData {
   price: number | null;
 }
 
-interface IPageData {
-  catalog: HTMLElement[];
+interface IHeaderData {
   counter: number;
+}
+
+interface IGalleryData {
+  items: HTMLElement[];
 }
 
 interface IBasketData {
@@ -380,46 +384,46 @@ interface IBuyerChangeEvent {
   field: keyof IBuyer;
   value: string;
 }
+
 ```
 
 Все прикладные интерфейсы и типы предметной области, отображения и событий объявлены в едином файле src/types/index.ts. IProductEvent описывает события выбора и удаления товара, а IBuyerChangeEvent — изменение поля данных покупателя. Локальные дубликаты этих структур в компонентах отсутствуют.
 
-### Класс Page
+### Класс Header
 
-Отвечает за каталог на главной странице и счётчик корзины в шапке.
+Отвечает за блок шапки: кнопку открытия корзины и счётчик товаров.
 
-Конструктор constructor(container: HTMLElement, events: IEvents) принимает элемент .page__wrapper и брокер событий. Все управляемые элементы ищутся только внутри этого контейнера.
+Конструктор constructor(container: HTMLElement, events: IEvents) принимает элемент .header и брокер событий.
 
 Поля:
 
-- galleryElement: HTMLElement — контейнер каталога .gallery;
 - basketButton: HTMLButtonElement — кнопка открытия корзины;
-- counterElement: HTMLElement — элемент счётчика товаров.
+- counterElement: HTMLElement — элемент счётчика товаров;
+- events: IEvents — брокер событий.
 
-Сеттеры:
+Сеттер counter: number отображает число товаров в корзине. При нажатии на иконку корзины создаётся событие basket:open.
 
-- catalog: HTMLElement[] заменяет содержимое галереи карточками;
-- counter: number отображает число товаров в корзине.
+### Класс Gallery
 
-При нажатии на иконку корзины создаёт событие basket:open.
+Отвечает только за блок каталога .gallery. Конструктор constructor(container: HTMLElement) принимает корневой элемент галереи. Сеттер items: HTMLElement[] заменяет содержимое галереи готовыми карточками товаров.
 
 ### Классы карточек
 
-Абстрактный класс Card<T> — общий непосредственный родитель всех трёх классов карточек. В него вынесены поиск общих DOM-элементов и сеттеры названия, цены, категории и изображения. Его поля titleElement, priceElement, categoryElement и imageElement содержат соответствующие элементы карточки. Элементы категории и изображения опциональны, поскольку их нет в шаблоне позиции корзины. Конструктор принимает корневой элемент карточки.
+Абстрактный класс Card<T> — общий непосредственный родитель всех трёх классов карточек. В него вынесена только общая для всех карточек работа с названием и ценой. Поля titleElement и priceElement содержат соответствующие элементы карточки. Конструктор принимает корневой элемент карточки.
 
-Конструктор constructor(container: HTMLElement) сохраняет корневой элемент и находит элементы карточки. Сеттеры title: string, price: number | null, category: string и image: string изменяют соответствующую часть разметки. Метод render(data?: Partial<T>): HTMLElement наследуется от Component<T>.
+Конструктор constructor(container: HTMLElement) сохраняет корневой элемент и находит элементы карточки. Сеттеры title: string и price: number | null изменяют соответствующую часть разметки. Метод render(data?: Partial<T>): HTMLElement наследуется от Component<T>.
 
-- CatalogCard отвечает за шаблон #card-catalog и отображает товар в каталоге. При клике создаёт событие catalog:select с идентификатором товара;
-- PreviewCard отвечает за шаблон #card-preview и отображает изображение, категорию, название, описание, цену и состояние кнопки подробного просмотра. Поля descriptionElement и actionButton содержат описание и кнопку действия. При клике на кнопку создаёт событие preview:toggle;
+- CatalogCard отвечает за шаблон #card-catalog и отображает товар в каталоге. Поля categoryElement и imageElement содержат обязательные элементы категории и изображения. Сеттеры category и image обновляют их разметку. При клике создаёт событие catalog:select с идентификатором товара;
+- PreviewCard отвечает за шаблон #card-preview и отображает изображение, категорию, название, описание, цену и состояние кнопки подробного просмотра. Поля categoryElement, imageElement, descriptionElement и actionButton содержат элементы карточки, защищённое поле events — брокер событий. Сеттеры category и image обновляют категорию и изображение. При клике на кнопку создаёт событие card:action;
 - BasketCard отвечает за шаблон #card-basket и отображает номер позиции, название и цену товара. Поля indexElement и deleteButton содержат порядковый номер и кнопку удаления. При клике создаёт событие basket:remove с идентификатором товара.
 
-Конструктор каждой конечной карточки принимает корневой элемент клонированного шаблона и брокер событий. CatalogCard и BasketCard также получают идентификатор, который замыкается обработчиком клика и не сохраняется в поле класса. Слушатели устанавливаются один раз в конструкторах, а события генерируются самими компонентами View.
+Конструктор каждой конечной карточки принимает корневой элемент клонированного шаблона. CatalogCard и BasketCard получают колбэк onClick . PreviewCard получает IEvents, сохраняет его в поле и самостоятельно генерирует событие.
 
 Точные сигнатуры конструкторов:
 
-- CatalogCard(container: HTMLElement, events: IEvents, id: string);
+- CatalogCard(container: HTMLElement, onClick: () => void);
 - PreviewCard(container: HTMLElement, events: IEvents);
-- BasketCard(container: HTMLElement, events: IEvents, id: string).
+- BasketCard(container: HTMLElement, onClick: () => void).
 
 Дополнительные сеттеры PreviewCard: description: string, buttonText: string, buttonDisabled: boolean. Дополнительный сеттер BasketCard: index: number.
 
@@ -433,7 +437,8 @@ interface IBuyerChangeEvent {
 
 - listElement: HTMLElement — список товаров;
 - totalElement: HTMLElement — общая стоимость;
-- orderButton: HTMLButtonElement — кнопка перехода к оформлению.
+- orderButton: HTMLButtonElement — кнопка перехода к оформлению;
+- events: IEvents — брокер событий.
 
 Сеттеры:
 
@@ -452,7 +457,8 @@ interface IBuyerChangeEvent {
 Поля:
 
 - contentElement: HTMLElement — контейнер для самостоятельного компонента, показанного внутри окна;
-- closeButton: HTMLButtonElement — кнопка закрытия.
+- closeButton: HTMLButtonElement — кнопка закрытия;
+- events: IEvents — брокер событий.
 
 Modal является самостоятельным конечным компонентом: у него нет дочерних классов. Корзина, карточка подробного просмотра, формы и сообщение об успехе не наследуются от него. Презентер передаёт их готовые DOM-элементы через сеттер content, поэтому эти компоненты при необходимости можно вывести и вне модального окна.
 
@@ -474,7 +480,8 @@ Modal является самостоятельным конечным комп�
 Поля:
 
 - submitButton: HTMLButtonElement — кнопка отправки формы;
-- errorsElement: HTMLElement — область сообщений валидации.
+- errorsElement: HTMLElement — область сообщений валидации;
+- events: IEvents — защищённое поле с брокером событий.
 
 Сеттеры:
 
@@ -497,7 +504,7 @@ Modal является самостоятельным конечным комп�
 
 ### Класс Success
 
-Отвечает за шаблон #success и отображает итог успешно оформленного заказа. Поля descriptionElement и closeButton содержат элемент с итогом и кнопку закрытия. Сеттер total: number выводит списанную сумму. При нажатии на кнопку закрытия создаёт событие success:close.
+Отвечает за шаблон #success и отображает итог успешно оформленного заказа. Поля descriptionElement и closeButton содержат элемент с итогом и кнопку закрытия, защищённое поле events — брокер событий. Сеттер total: number выводит списанную сумму. При нажатии на кнопку закрытия создаёт событие success:close.
 
 Конструктор constructor(container: HTMLElement, events: IEvents) находит элементы результата и устанавливает обработчик кнопки. Метод render(data?: Partial<ISuccessData>): HTMLElement наследуется от Component<ISuccessData>.
 
@@ -509,7 +516,7 @@ Modal является самостоятельным конечным комп�
 
 Обработка изменений моделей устроена следующим образом:
 
-- catalog:changed — презентер получает товары через Catalog.getProducts(), создаёт для каждого CatalogCard и передаёт готовые элементы компоненту Page;
+- catalog:changed — презентер получает товары через Catalog.getProducts(), создаёт для каждого CatalogCard и передаёт готовые элементы компоненту Gallery;
 - preview:changed — получает выбранный товар через Catalog.getPreview(), объединяет его состояние с результатом Basket.hasItem() и открывает PreviewCard;
 - basket:changed — получает позиции, количество и стоимость методами Basket, создаёт BasketCard для каждой позиции и обновляет корзину и счётчик;
 - buyer:changed — получает значения через Buyer.getData(), ошибки через Buyer.validate() и обновляет обе формы.
@@ -530,7 +537,7 @@ Modal является самостоятельным конечным комп�
 События представлений:
 
 - catalog:select — пользователь нажал на карточку каталога. Передаёт { id: string }; презентер получает товар из Catalog и открывает подробный просмотр;
-- preview:toggle — пользователь нажал на кнопку карточки подробного просмотра. Данных не передаёт; презентер получает выбранный товар из Catalog и добавляет его в Basket либо удаляет из неё;
+- card:action — пользователь нажал на кнопку карточки подробного просмотра. Данных не передаёт; презентер получает выбранный товар из Catalog и добавляет его в Basket либо удаляет из неё;
 - basket:open — пользователь нажал на иконку корзины. Данных не передаёт; презентер собирает данные корзины и открывает соответствующий компонент;
 - basket:remove — пользователь нажал на кнопку удаления позиции. Передаёт { id: string }; презентер удаляет товар из модели корзины и повторно отображает её;
 - basket:order — пользователь нажал «Оформить». Данных не передаёт; презентер показывает первый шаг оформления;

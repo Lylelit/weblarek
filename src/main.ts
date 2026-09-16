@@ -6,12 +6,15 @@ import { Buyer } from './components/Models/Buyer';
 import { Catalog } from './components/Models/Catalog';
 import { Api } from './components/base/Api';
 import { EventEmitter } from './components/base/Events';
+import { BasketCard } from './components/View/BasketCard';
 import { BasketView } from './components/View/BasketView';
-import { BasketCard, CatalogCard, PreviewCard } from './components/View/Card';
+import { CatalogCard } from './components/View/CatalogCard';
 import { ContactsForm } from './components/View/ContactsForm';
+import { Gallery } from './components/View/Gallery';
+import { Header } from './components/View/Header';
 import { Modal } from './components/View/Modal';
 import { OrderForm } from './components/View/OrderForm';
-import { Page } from './components/View/Page';
+import { PreviewCard } from './components/View/PreviewCard';
 import { Success } from './components/View/Success';
 import { IBuyerChangeEvent, IProductEvent, TPayment } from './types';
 import {
@@ -25,9 +28,11 @@ const events = new EventEmitter();
 const catalog = new Catalog(events);
 const basket = new Basket(events);
 const buyer = new Buyer(events);
-const api = new WebLarekApi(new Api(API_URL));
+const baseApi = new Api(API_URL);
+const api = new WebLarekApi(baseApi);
 
-const page = new Page(ensureElement<HTMLElement>('.page__wrapper'), events);
+const header = new Header(ensureElement<HTMLElement>('.header'), events);
+const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const basketView = new BasketView(cloneTemplate<HTMLElement>('#basket'), events);
 const preview = new PreviewCard(cloneTemplate<HTMLElement>('#card-preview'), events);
@@ -39,8 +44,7 @@ const renderCatalog = (): void => {
     const cards = catalog.getProducts().map((product) => {
         const card = new CatalogCard(
             cloneTemplate<HTMLElement>('#card-catalog'),
-            events,
-            product.id
+            () => events.emit(appEvents.catalogSelect, { id: product.id })
         );
         return card.render({
             title: product.title,
@@ -49,7 +53,7 @@ const renderCatalog = (): void => {
             price: product.price,
         });
     });
-    page.render({ catalog: cards });
+    gallery.render({ items: cards });
 };
 
 const renderBasket = (): void => {
@@ -57,8 +61,7 @@ const renderBasket = (): void => {
     const items = products.map((product, position) => {
         const card = new BasketCard(
             cloneTemplate<HTMLElement>('#card-basket'),
-            events,
-            product.id
+            () => events.emit(appEvents.basketRemove, { id: product.id })
         );
         return card.render({
             index: position + 1,
@@ -71,7 +74,7 @@ const renderBasket = (): void => {
         total: basket.getTotal(),
         valid: products.length > 0,
     });
-    page.render({ counter: basket.getCount() });
+    header.render({ counter: basket.getCount() });
 };
 
 const checkOrder = (): string[] => {
@@ -151,7 +154,7 @@ events.on<IProductEvent>(appEvents.catalogSelect, ({ id }) => {
     catalog.setPreview(product);
 });
 
-events.on(appEvents.previewToggle, () => {
+events.on(appEvents.cardAction, () => {
     const product = catalog.getPreview();
     if (!product) return;
 
@@ -164,7 +167,6 @@ events.on(appEvents.previewToggle, () => {
 });
 
 events.on(appEvents.basketOpen, () => {
-    renderBasket();
     modal.render({ content: basketView.render() });
 });
 
@@ -175,7 +177,6 @@ events.on<IProductEvent>(appEvents.basketRemove, ({ id }) => {
 });
 
 events.on(appEvents.basketOrder, () => {
-    renderOrder();
     modal.render({ content: orderForm.render() });
 });
 
@@ -188,7 +189,6 @@ events.on<IBuyerChangeEvent>(appEvents.buyerChange, ({ field, value }) => {
 });
 
 events.on(appEvents.orderSubmit, () => {
-    renderContacts();
     modal.render({ content: contactsForm.render() });
 });
 
@@ -213,6 +213,9 @@ events.on(appEvents.contactsSubmit, () => {
 
 events.on(appEvents.modalClose, () => modal.close());
 events.on(appEvents.successClose, () => modal.close());
+
+basket.clear();
+buyer.clear();
 
 api.getProducts()
     .then((response) => {

@@ -9,12 +9,12 @@ export class BasketView extends Component<IBasketData> {
     private readonly totalElement: HTMLElement;
     private readonly orderButton: HTMLButtonElement;
 
-    constructor(container: HTMLElement, events: IEvents) {
+    constructor(container: HTMLElement, protected readonly events: IEvents) {
         super(container);
         this.listElement = ensureElement<HTMLElement>('.basket__list', container);
         this.totalElement = ensureElement<HTMLElement>('.basket__price', container);
         this.orderButton = ensureElement<HTMLButtonElement>('.basket__button', container);
-        this.orderButton.addEventListener('click', () => events.emit(appEvents.basketOrder));
+        this.orderButton.addEventListener('click', () => this.events.emit(appEvents.basketOrder));
     }
 
     set items(value: HTMLElement[]) {

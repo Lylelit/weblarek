@@ -8,18 +8,22 @@ export abstract class Form<T extends IFormData> extends Component<T> {
     protected readonly submitButton: HTMLButtonElement;
     protected readonly errorsElement: HTMLElement;
 
-    constructor(container: HTMLFormElement, events: IEvents, submitEvent: string) {
+    constructor(
+        container: HTMLFormElement,
+        protected readonly events: IEvents,
+        submitEvent: string
+    ) {
         super(container);
         this.submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', container);
         this.errorsElement = ensureElement<HTMLElement>('.form__errors', container);
 
         container.addEventListener('input', (event) => {
             const input = event.target as HTMLInputElement;
-            events.emit(appEvents.buyerChange, { field: input.name, value: input.value });
+            this.events.emit(appEvents.buyerChange, { field: input.name, value: input.value });
         });
         container.addEventListener('submit', (event) => {
             event.preventDefault();
-            events.emit(submitEvent);
+            this.events.emit(submitEvent);
         });
     }
 

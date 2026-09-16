@@ -22,7 +22,7 @@ export const appEvents = {
   basketChanged: 'basket:changed',
   buyerChanged: 'buyer:changed',
   catalogSelect: 'catalog:select',
-  previewToggle: 'preview:toggle',
+  cardAction: 'card:action',
   basketOpen: 'basket:open',
   basketRemove: 'basket:remove',
   basketOrder: 'basket:order',
