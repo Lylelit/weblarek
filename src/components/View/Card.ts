@@ -1,5 +1,6 @@
 import { Component } from '../base/Component';
-import { ensureElement, formatPrice } from '../../utils/utils';
+import { ensureElement } from '../../utils/utils';
+import { formatPrice } from '../../utils/customUtils';
 
 export abstract class Card<T> extends Component<T> {
     protected readonly titleElement: HTMLElement;

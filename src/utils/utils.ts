@@ -2,11 +2,11 @@ export function pascalToKebab(value: string): string {
     return value.replace(/([a-z0–9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-export function isSelector(x: unknown): x is string {
+export function isSelector(x: any): x is string {
     return (typeof x === "string") && x.length > 1;
 }
 
-export function isEmpty(value: unknown): boolean {
+export function isEmpty(value: any): boolean {
     return value === null || value === undefined;
 }
 
@@ -50,10 +50,6 @@ export function cloneTemplate<T extends HTMLElement>(query: string | HTMLTemplat
         throw new Error(`Template ${query} has no content`);
     }
     return template.content.firstElementChild.cloneNode(true) as T;
-}
-
-export function formatPrice(value: number | null): string {
-    return value === null ? 'Бесценно' : `${value} синапсов`;
 }
 
 export function bem(block: string, element?: string, modifier?: string): { name: string, class: string } {
@@ -128,9 +124,8 @@ export function createElement<
             if (isPlainObject(value) && key === 'dataset') {
                 setElementData(element, value);
             } else {
-                Object.assign(element, {
-                    [key]: isBoolean(value) ? value : String(value),
-                });
+                // @ts-expect-error fix indexing later
+                element[key] = isBoolean(value) ? value : String(value);
             }
         }
     }

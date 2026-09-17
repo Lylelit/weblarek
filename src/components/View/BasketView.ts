@@ -2,7 +2,8 @@ import { Component } from '../base/Component';
 import { IEvents } from '../base/Events';
 import { IBasketData } from '../../types';
 import { appEvents } from '../../utils/constants';
-import { ensureElement, formatPrice } from '../../utils/utils';
+import { ensureElement } from '../../utils/utils';
+import { formatPrice } from '../../utils/customUtils';
 
 export class BasketView extends Component<IBasketData> {
     private readonly listElement: HTMLElement;
